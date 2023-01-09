@@ -20,6 +20,15 @@ contract TurkishFootballCards
         uint price;
     }
 
+    event nft_sold
+    {
+        uint id;
+        address owner;
+        address nftID; 
+        bool soldBefore;
+        uint price;
+    }
+
 
     constructor()
     {
@@ -31,6 +40,7 @@ contract TurkishFootballCards
     
     function createCard() public
     {
+
 
     }
     
@@ -54,7 +64,8 @@ contract TurkishFootballCards
         //transfer funds
         TF_owner.transfer(msg.value);
         //trigger event
-        
+        emit(_id, _nft_card.owner,_nft_card.nftID, true, _nft_card.price);
+
     }
 
     
