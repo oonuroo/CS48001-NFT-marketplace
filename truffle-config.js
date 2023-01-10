@@ -102,7 +102,8 @@ module.exports = {
   mocha: {
     // timeout: 100000
   },
-
+  //config build directory
+  contracts_build_directory: './abis/',
   // Configure your compilers
   compilers: {
     solc: {
