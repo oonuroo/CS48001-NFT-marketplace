@@ -1,15 +1,17 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity >=0.4.24  <=0.8.17;
 
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
-import "../node_modules/openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
-import "../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
+//import {ERC721} from "@openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+//import {ReentrancyGuard} from "@openzeppelin-solidity/contracts/ReentrancyGuard.sol";
+//import {Ownable} from "@openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /// @notice Smart Contract for the nft marketplace of the turkish football assocition
 /// @dev Must receive payments for nft's (sell nfts), verify their creators id, create nfts
 
-abstract contract TurkishFootballCards is ReentrancyGuard, Ownable, ERC721
+contract TurkishFootballCards is ReentrancyGuard, Ownable, ERC721
 {
     address payable public TF_owner;
     uint256 public mintPrice = 0.002 ether;
@@ -34,7 +36,7 @@ abstract contract TurkishFootballCards is ReentrancyGuard, Ownable, ERC721
     );
 
 
-    constructor() 
+    constructor() ERC721('TurkishFootball','SimpleMint')
     {
         TF_owner = payable(0x08B9F93cf5bde9dDEf4E4BF54df2aD5A9902f744);
         //nftMinter = 'address of the turkish football federation'; 

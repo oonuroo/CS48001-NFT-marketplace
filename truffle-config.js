@@ -103,11 +103,14 @@ module.exports = {
     // timeout: 100000
   },
   //config build directory
+  //contracts_directory:  './contracts/Migrations.sol',
+  migrations_directory: './migrations/',
   contracts_build_directory: './abis/',
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.17" // Fetch exact version from solc-bin (default: truffle's version)
+      //version: "^0.4.24"
+      version: ">=0.4.24  <=0.8.17", // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {
