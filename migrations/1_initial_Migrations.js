@@ -1,5 +1,5 @@
-const Migrations = artifacts.require("Migrations");
+const NftMarketplace = artifacts.require("TurkishFootballCards");
 
-module.exports = function(deployer) {
-  deployer.deploy(Migrations);
+module.exports = function(_deployer) {
+  _deployer.deploy(NftMarketplace);
 };

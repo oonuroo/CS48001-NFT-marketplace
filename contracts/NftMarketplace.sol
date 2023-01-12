@@ -1,21 +1,19 @@
-pragma solidity >=0.4.24  <=0.8.17;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.4.22 <0.9.0;
 
-//import {ERC721} from "@openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
-//import {ReentrancyGuard} from "@openzeppelin-solidity/contracts/ReentrancyGuard.sol";
-//import {Ownable} from "@openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts//security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /// @notice Smart Contract for the nft marketplace of the turkish football assocition
 /// @dev Must receive payments for nft's (sell nfts), verify their creators id, create nfts
 
-contract TurkishFootballCards is ReentrancyGuard, Ownable, ERC721
+contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
 {
     address payable public TF_owner;
     uint256 public mintPrice = 0.002 ether;
-    uint256 nftCount = 0;
+    uint256 public nftCount = 0;
     mapping(uint256 => card) public nfts;
 
     
@@ -38,9 +36,9 @@ contract TurkishFootballCards is ReentrancyGuard, Ownable, ERC721
 
     constructor() ERC721('TurkishFootball','SimpleMint')
     {
-        TF_owner = payable(0x08B9F93cf5bde9dDEf4E4BF54df2aD5A9902f744);
-        //nftMinter = 'address of the turkish football federation'; 
-        mintPrice = 10 ether;
+        TF_owner = payable(0x61cf35200B6998660f4b442Ecb85151F9CA98492);
+        //nftMinter = 'address of the turkish football federation';     
+        //call the constructor of the ERC721
     }
 
     
@@ -50,18 +48,14 @@ contract TurkishFootballCards is ReentrancyGuard, Ownable, ERC721
         //only the Turkish Football federation is supposed to be able to mint
         require(msg.sender == TF_owner);
         //the message value should be equal to the minting cost
-        require(msg.value == mintPrice);
-        
+        require(msg.value >= mintPrice);
         //creating the new nft in the marketplace
-        card memory _new_nft = card({id: nftCount, owner: TF_owner, soldBefore: false, price: _nft_price});
         
-        nfts[nftCount] = _new_nft;
-        nftCount++;
-
+        nfts[nftCount] = card({id: nftCount, owner: TF_owner, soldBefore: false, price: _nft_price});
         //actually creating the nft in the
         uint256 TokenID = nftCount;
+        nftCount++;
         _safeMint(TF_owner, TokenID); //emits a {Transfer} event
-
 
 
     }
