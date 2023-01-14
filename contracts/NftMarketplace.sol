@@ -49,10 +49,9 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
 
     constructor() ERC721('TurkishFootball','SimpleMint')
     {
-        TF_owner = payable(0x61cf35200B6998660f4b442Ecb85151F9CA98492);
-       // _setupRole(DEFAULT_ADMIN_ROLE, address(this));
-       //_setupRole(MINTER_ROLE, address(this));
-        setApprovalForAll(address(this),true);
+        TF_owner = payable(0x61cf35200B6998660f4b442Ecb85151F9CA98492); //address of the nft_minter/aka TFF
+       
+        setApprovalForAll(address(this),true); // aproove the contract to be able to admin the minted nfts
 
         //nftMinter = 'address of the turkish football federation';     
         //call the constructor of the ERC721
@@ -99,7 +98,7 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
         TF_owner.transfer(msg.value); // maybe not use this because of the Istambull fork and change in gas prices (not safe anymore)
     
         //transfer the nft
-        ERC721(contractsAddress).safeTransferFrom(owner, msg.sender, _tokenID);
+        ERC721(contractsAddress).safeTransferFrom(owner, msg.sender, _tokenID); //calls the transfer function with the contracts address(it's an authorized operator)
         //update the cards info
         _cardToSell.owner = msg.sender;
         _cardToSell.soldBefore = true;
