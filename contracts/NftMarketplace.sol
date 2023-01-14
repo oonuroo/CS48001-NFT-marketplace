@@ -33,10 +33,27 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
         uint256 price
     );
 
+    event nft_created(
+        uint256 id,
+        address owner,
+        bool soldBefore,
+        uint256 price
+    );
+    event nft_approval_test(
+        address aprooved,
+        address caller,
+        address contracts_id, 
+        address true_owner
+    );
+
 
     constructor() ERC721('TurkishFootball','SimpleMint')
     {
         TF_owner = payable(0x61cf35200B6998660f4b442Ecb85151F9CA98492);
+       // _setupRole(DEFAULT_ADMIN_ROLE, address(this));
+       //_setupRole(MINTER_ROLE, address(this));
+        setApprovalForAll(address(this),true);
+
         //nftMinter = 'address of the turkish football federation';     
         //call the constructor of the ERC721
     }
@@ -44,6 +61,8 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
     
     function mint(uint256 _nft_price) external onlyOwner payable
     {
+        address contractsAddress = address(this);
+        
         //this funtion is responsible for the minting of new coins
         //only the Turkish Football federation is supposed to be able to mint
         require(msg.sender == TF_owner);
@@ -52,58 +71,35 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
         //creating the new nft in the marketplace
         
         nfts[nftCount] = card({id: nftCount, owner: TF_owner, soldBefore: false, price: _nft_price});
+        emit nft_created(nftCount, TF_owner, false, _nft_price); //event of the creation on the marketplace
         //actually creating the nft in the
         uint256 TokenID = nftCount;
         nftCount++;
+        //mint(TF_owner);
         _safeMint(TF_owner, TokenID); //emits a {Transfer} event
-
 
     }
 
-    //this version of the funtion in gonna diiiieee
-    //this is a normal marketplace, now, let us change it to a nft marketplace
-    /*
-    function purchaseCard(uint256 _id) public external payable
-    {
-        //check correct id
-        require(_id >= 0 && _id <= nftCount);
-        //check if valid creator/current owner
-        card memory _nft_card = nfts[_id]; 
-        require(_nft_card.owner == TF_owner);
-        //check if it's been sold
-        require(!_nft_card.soldBefore);
-        //check price/funds
-        require(msg.value >= _nft_card.price);
-        //change owner
-        //_nft_card.owner = msg.sender; we should use the proper thing to t«do this, aka ERC721
-        //mark as sold
-        _nft_card.soldBefore = true;
-        //update nft list
-        nfts[_id] = _nft_card;
-        //transfer funds
-        TF_owner.transfer(msg.value);
-        //trigger event
-        emit nft_sold(_id, _nft_card.owner,_nft_card.nftID, true, _nft_card.price);
-
-    }*/
-
-
-
-    //new version of the purchaseCard, using the standard ERC721
     function purchaseCard(uint256 _tokenID) external payable
     {
         //check correct id
         require(_tokenID >= 0 && _tokenID <= nftCount);
+        address contractsAddress = address(this);
+        
+
         //load nft information
         address owner = ownerOf(_tokenID);
         card memory _cardToSell = nfts[_tokenID];
         require(owner == TF_owner, "Invalid owner, nft does not belong to the Turkish football association");
+        
         //check for funds 
         require(msg.value >= _cardToSell.price, "Unsufficient funds");
+        
         //tranfer the funds (fund value can change after calling external functions, aka the safeTransferFrom)
         TF_owner.transfer(msg.value); // maybe not use this because of the Istambull fork and change in gas prices (not safe anymore)
+    
         //transfer the nft
-        safeTransferFrom(owner, msg.sender,_tokenID);
+        ERC721(contractsAddress).safeTransferFrom(owner, msg.sender, _tokenID);
         //update the cards info
         _cardToSell.owner = msg.sender;
         _cardToSell.soldBefore = true;
