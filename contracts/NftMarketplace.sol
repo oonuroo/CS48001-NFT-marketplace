@@ -39,12 +39,6 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
         bool soldBefore,
         uint256 price
     );
-    event nft_approval_test(
-        address aprooved,
-        address caller,
-        address contracts_id, 
-        address true_owner
-    );
 
 
     constructor() ERC721('TurkishFootball','SimpleMint')
@@ -52,7 +46,7 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
         TF_owner = payable(0x61cf35200B6998660f4b442Ecb85151F9CA98492); //address of the nft_minter/aka TFF
        
         setApprovalForAll(address(this),true); // aproove the contract to be able to admin the minted nfts
-
+        //SetbaseURI("https://www.mynftforblockchainproject.com/safedeposit/"); //replace this with the actual address
         //nftMinter = 'address of the turkish football federation';     
         //call the constructor of the ERC721
     }

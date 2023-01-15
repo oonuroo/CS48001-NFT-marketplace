@@ -1,5 +1,11 @@
 const NftMarketplace = artifacts.require("TurkishFootballCards");
 
+require("chai")
+    .use(require('chai-as-promised'))
+    .should()
+
+
+
 contract('TurkishFootballCards', (accounts) => {
         let nftCount;
 
@@ -25,11 +31,6 @@ contract('TurkishFootballCards', (accounts) => {
             assert.notEqual(name, null);
         })
 
-     /*   it("should set the price of minting", async() => {
-
-            const price =  await marketplaceInstance.mintPrice();
-            assert.equal(price, web3.utils.toWei('0.002', 'Ether'), "The mint price was not set" );
-        })*/
 
         it("Should mint an nft", async() => {
     
@@ -50,23 +51,49 @@ contract('TurkishFootballCards', (accounts) => {
             //check the TokenID
             assert.equal(toString(creation_event.id), toString(nft_event.TokenId), toString(nftCount));
 
-        })
-      /*  it("Should be owned by the contract", async() => {
 
-            const  contract = await marketplaceInstance.address
-            const owner_return = await marketplaceInstance.ownerOf(0);
-            assert.equal(owner_return, contract, "The contract is not the owner");
-            
-        })*/
+
+            //failures
+
+            //try to mint with the wrong account
+            await marketplaceInstance.mint(web3.utils.toWei('10','Ether'),{from:null, value:web3.utils.toWei('0.002', 'Ether')}).should.be.rejected;
+            await marketplaceInstance.mint(web3.utils.toWei('10','Ether'),{from:'', value:web3.utils.toWei('0.002', 'Ether')}).should.be.rejected;
+            await marketplaceInstance.mint(web3.utils.toWei('10','Ether'),{from:0, value:web3.utils.toWei('0.002', 'Ether')}).should.be.rejected;
+            await marketplaceInstance.mint(web3.utils.toWei('10','Ether'),{from:accounts[1], value:web3.utils.toWei('0.002', 'Ether')}).should.be.rejected;
+
+            //try to mint with wrong value on the message
+            await marketplaceInstance.mint(web3.utils.toWei('10','Ether'),{from:accounts[0]}).should.be.rejected;
+            await marketplaceInstance.mint(web3.utils.toWei('10','Ether'),{from:accounts[0], value:web3.utils.toWei('0.001', 'Ether')}).should.be.rejected;
+
+
+
+
+
+
+        })
+
 
         it("Should buy an nft", async() => {
 
-            const buy = await marketplaceInstance.purchaseCard(0, {from: accounts[1], value: web3.utils.toWei('10','Ether')});
+            const previous_balance = await web3.eth.getBalance(accounts[0]);
+            const buy = await marketplaceInstance.purchaseCard(0, {from: accounts[3], value: web3.utils.toWei('10','Ether')});
+            const new_balance = await web3.eth.getBalance(accounts[0]);
+            const nft_info = await marketplaceInstance.nfts(0);
+
             const transfer_event = await buy.logs[0].args;
             const purchase_event = await buy.logs[1].args;
+
             
             //see ownership transfer
-            assert(transfer_event.to, accounts[1], purchase_event.owner);
+            assert.equal(transfer_event.to, accounts[3], purchase_event.owner, 'Ownership change is not correct');
+            //check if the ballance changed 
+            assert.notEqual(previous_balance, new_balance, 'Money wasnt transfered');
+            //check if the soldBefore changed
+            assert.ok(nft_info.soldBefore, 'The nft state was not changed');
+
+
+            //failures
+            
             
         })
 
