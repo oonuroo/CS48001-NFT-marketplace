@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts//security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
 /// @notice Smart Contract for the nft marketplace of the turkish football assocition
 /// @dev Must receive payments for nft's (sell nfts), verify their creators id, create nfts
 
-contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
+contract TurkishFootballCards is ERC721URIStorage, ReentrancyGuard, Ownable
 {
     address payable public TF_owner;
     uint256 public mintPrice = 0.002 ether;
@@ -41,21 +40,18 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
     );
 
 
-    constructor() ERC721('TurkishFootball','SimpleMint')
+    constructor() ERC721('TurkishFootballFederation','Card Colection')
     {
         TF_owner = payable(0x61cf35200B6998660f4b442Ecb85151F9CA98492); //address of the nft_minter/aka TFF
        
         setApprovalForAll(address(this),true); // aproove the contract to be able to admin the minted nfts
-        //SetbaseURI("https://www.mynftforblockchainproject.com/safedeposit/"); //replace this with the actual address
         //nftMinter = 'address of the turkish football federation';     
         //call the constructor of the ERC721
     }
 
     
-    function mint(uint256 _nft_price) external onlyOwner payable
+    function mint(uint256 _nft_price, string memory _tokenURI) external onlyOwner nonReentrant payable 
     {
-        address contractsAddress = address(this);
-        
         //this funtion is responsible for the minting of new coins
         //only the Turkish Football federation is supposed to be able to mint
         require(msg.sender == TF_owner);
@@ -70,13 +66,15 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
         nftCount++;
         //mint(TF_owner);
         _safeMint(TF_owner, TokenID); //emits a {Transfer} event
+        _setTokenURI(TokenID, _tokenURI);
 
     }
 
-    function purchaseCard(uint256 _tokenID) external payable
+    function purchaseCard(uint256 _tokenID) external nonReentrant payable
     {
         //check correct id
-        require(_tokenID >= 0 && _tokenID <= nftCount);
+        require(_tokenID >= 0 && _tokenID <= nftCount, 'Invalid Token ID' );
+        require(_exists(_tokenID),'Invalid Token ID' );
         address contractsAddress = address(this);
         
 
@@ -85,20 +83,28 @@ contract TurkishFootballCards is ERC721, ReentrancyGuard, Ownable
         card memory _cardToSell = nfts[_tokenID];
         require(owner == TF_owner, "Invalid owner, nft does not belong to the Turkish football association");
         
+        //check if owner is the seller
+        require(msg.sender != owner, 'Seller cannout purchase an NFT');
         //check for funds 
         require(msg.value >= _cardToSell.price, "Unsufficient funds");
         
         //tranfer the funds (fund value can change after calling external functions, aka the safeTransferFrom)
-        TF_owner.transfer(msg.value); // maybe not use this because of the Istambull fork and change in gas prices (not safe anymore)
-    
+        (bool transfer, bytes memory data) = TF_owner.call{value: msg.value}("");
+        require(transfer, 'Failed to send Ether');
         //transfer the nft
-        ERC721(contractsAddress).safeTransferFrom(owner, msg.sender, _tokenID); //calls the transfer function with the contracts address(it's an authorized operator)
-        //update the cards info
+                //update the cards info
         _cardToSell.owner = msg.sender;
         _cardToSell.soldBefore = true;
         nfts[_tokenID] = _cardToSell;
+        ERC721(contractsAddress).safeTransferFrom(owner, msg.sender, _tokenID); //calls the transfer function with the contracts address(it's an authorized operator)
+        
         //event to log this, maybe not do it, cause the safeTransferFrom function already emits a {Transfer} event
         emit nft_sold(_tokenID, _cardToSell.owner, true, _cardToSell.price);
+
+    }
+
+    fallback() external
+    {
 
     }
 
