@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 contract TurkishFootballCards is ERC721URIStorage, ReentrancyGuard, Ownable
 {
     address payable public TF_owner;
-    uint256 public mintPrice = 0.002 ether;
+    //uint256 public mintPrice = 0.002 ether;
     uint256 public nftCount = 0;
     mapping(uint256 => card) public nfts;
 
@@ -50,13 +50,13 @@ contract TurkishFootballCards is ERC721URIStorage, ReentrancyGuard, Ownable
     }
 
     
-    function mint(uint256 _nft_price, string memory _tokenURI) external onlyOwner nonReentrant payable 
+    function mint(uint256 _nft_price, string memory _tokenURI) external onlyOwner nonReentrant
     {
         //this funtion is responsible for the minting of new coins
         //only the Turkish Football federation is supposed to be able to mint
         require(msg.sender == TF_owner);
         //the message value should be equal to the minting cost
-        require(msg.value >= mintPrice);
+       // require(msg.value >= mintPrice);
         //creating the new nft in the marketplace
         
         nfts[nftCount] = card({id: nftCount, owner: TF_owner, soldBefore: false, price: _nft_price});
@@ -96,16 +96,17 @@ contract TurkishFootballCards is ERC721URIStorage, ReentrancyGuard, Ownable
         _cardToSell.owner = msg.sender;
         _cardToSell.soldBefore = true;
         nfts[_tokenID] = _cardToSell;
-        ERC721(contractsAddress).safeTransferFrom(owner, msg.sender, _tokenID); //calls the transfer function with the contracts address(it's an authorized operator)
-        
         //event to log this, maybe not do it, cause the safeTransferFrom function already emits a {Transfer} event
         emit nft_sold(_tokenID, _cardToSell.owner, true, _cardToSell.price);
+        ERC721(contractsAddress).safeTransferFrom(owner, msg.sender, _tokenID); //calls the transfer function with the contracts address(it's an authorized operator)
+        
+        
 
     }
 
-    fallback() external
+    fallback() external payable
     {
-
+        require(msg.value == 0);
     }
 
     
